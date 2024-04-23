@@ -8,7 +8,7 @@ namespace SpeedrunComSharp
     {
         public string ID { get; private set; }
 
-        public string VariableID { get; private set; }        
+        public string VariableID { get; private set; }
 
         #region Links
 
@@ -27,9 +27,10 @@ namespace SpeedrunComSharp
 
         public static VariableValue CreateCustomValue(SpeedrunComClient client, string variableId, string customValue)
         {
-            var value = new VariableValue();
-
-            value.VariableID = variableId;
+            var value = new VariableValue
+            {
+                VariableID = variableId
+            };
 
             value.variable = new Lazy<Variable>(() => client.Variables.GetVariable(value.VariableID));
             value.value = new Lazy<string>(() => customValue);
@@ -39,10 +40,11 @@ namespace SpeedrunComSharp
 
         public static VariableValue ParseValueDescriptor(SpeedrunComClient client, KeyValuePair<string, dynamic> valueElement)
         {
-            var value = new VariableValue();
-
-            value.VariableID = valueElement.Key;
-            value.ID = valueElement.Value as string;
+            var value = new VariableValue
+            {
+                VariableID = valueElement.Key,
+                ID = valueElement.Value as string
+            };
 
             //Parse Links
 
@@ -54,14 +56,15 @@ namespace SpeedrunComSharp
 
         public static VariableValue ParseIDPair(SpeedrunComClient client, Variable variable, KeyValuePair<string, dynamic> valueElement)
         {
-            var value = new VariableValue();
+            var value = new VariableValue
+            {
+                VariableID = variable.ID,
+                ID = valueElement.Key as string,
 
-            value.VariableID = variable.ID;
-            value.ID = valueElement.Key as string;
+                //Parse Links
 
-            //Parse Links
-
-            value.variable = new Lazy<Variable>(() => variable);
+                variable = new Lazy<Variable>(() => variable)
+            };
 
             var valueName = valueElement.Value as string;
             value.value = new Lazy<string>(() => valueName);
@@ -76,10 +79,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as VariableValue;
-
-            if (other == null)
+            if (!(obj is VariableValue other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

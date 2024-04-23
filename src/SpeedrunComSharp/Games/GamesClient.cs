@@ -9,7 +9,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "games";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public GamesClient(SpeedrunComClient baseClient)
         {
@@ -27,12 +27,14 @@ namespace SpeedrunComSharp
         /// <param name="siteUri">The site URI for the game.</param>
         /// <param name="embeds">Optional. If included, will dictate the embedded resources included in the response.</param>
         /// <returns></returns>
-        public Game GetGameFromSiteUri(string siteUri, GameEmbeds embeds = default(GameEmbeds))
+        public Game GetGameFromSiteUri(string siteUri, GameEmbeds embeds = default)
         {
             var id = GetGameIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetGame(id, embeds);
         }
@@ -48,7 +50,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Game)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }
@@ -66,36 +70,48 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, games will be in the same order as the API.</param>
         /// <returns></returns>
         public IEnumerable<Game> GetGames(
-            string name = null, int? yearOfRelease = null, 
-            string platformId = null, string regionId = null, 
+            string name = null, int? yearOfRelease = null,
+            string platformId = null, string regionId = null,
             string moderatorId = null, int? elementsPerPage = null,
-            GameEmbeds embeds = default(GameEmbeds),
-            GamesOrdering orderBy = default(GamesOrdering))
+            GameEmbeds embeds = default,
+            GamesOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (!string.IsNullOrEmpty(name))
+            {
                 parameters.Add(string.Format("name={0}", Uri.EscapeDataString(name)));
+            }
 
             if (yearOfRelease.HasValue)
+            {
                 parameters.Add(string.Format("released={0}", yearOfRelease.Value));
+            }
 
             if (!string.IsNullOrEmpty(platformId))
+            {
                 parameters.Add(string.Format("platform={0}", Uri.EscapeDataString(platformId)));
+            }
 
             if (!string.IsNullOrEmpty(regionId))
+            {
                 parameters.Add(string.Format("region={0}", Uri.EscapeDataString(regionId)));
+            }
 
             if (!string.IsNullOrEmpty(moderatorId))
+            {
                 parameters.Add(string.Format("moderator={0}", Uri.EscapeDataString(moderatorId)));
+            }
 
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetGamesUri(parameters.ToParameters());
-            return baseClient.DoPaginatedRequest(uri, 
+            return baseClient.DoPaginatedRequest(uri,
                 x => Game.Parse(baseClient, x) as Game);
         }
 
@@ -106,7 +122,7 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, gameheaders will be in the same order as the API.</param>
         /// <returns></returns>
         public IEnumerable<GameHeader> GetGameHeaders(int elementsPerPage = 1000,
-            GamesOrdering orderBy = default(GamesOrdering))
+            GamesOrdering orderBy = default)
         {
             var parameters = new List<string>() { "_bulk=yes" };
 
@@ -125,29 +141,29 @@ namespace SpeedrunComSharp
         /// <param name="gameId">The ID for the game.</param>
         /// <param name="embeds">Optional. If included, will dictate the additional resources embedded in the response.</param>
         /// <returns></returns>
-        public Game GetGame(string gameId, GameEmbeds embeds = default(GameEmbeds))
+        public Game GetGame(string gameId, GameEmbeds embeds = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
-            var uri = GetGamesUri(string.Format("/{0}{1}", 
-                Uri.EscapeDataString(gameId), 
+            var uri = GetGamesUri(string.Format("/{0}{1}",
+                Uri.EscapeDataString(gameId),
                 parameters.ToParameters()));
 
             var result = baseClient.DoRequest(uri);
 
             return Game.Parse(baseClient, result.data);
         }
-        
+
         /// <summary>
         /// Fetch a Game object identified by its name.
         /// </summary>
         /// <param name="name">The name of the game.</param>
         /// <param name="embeds">Optional. If included, will dictate the additional resources embedded in the response.</param>
         /// <returns></returns>
-        public Game SearchGame(string name, GameEmbeds embeds = default(GameEmbeds))
+        public Game SearchGame(string name, GameEmbeds embeds = default)
         {
             var game = GetGames(name: name, embeds: embeds, elementsPerPage: 1).FirstOrDefault();
-            
+
             return game;
         }
 
@@ -157,7 +173,7 @@ namespace SpeedrunComSharp
         /// <param name="name">The name of the game.</param>
         /// <param name="embeds">Optional. If included, will dictate the additional resources embedded in the response.</param>
         /// <returns></returns>
-        public Game SearchGameExact(string name, GameEmbeds embeds = default(GameEmbeds))
+        public Game SearchGameExact(string name, GameEmbeds embeds = default)
         {
             var game = GetGames(name: name, embeds: embeds, elementsPerPage: 1).Take(1).FirstOrDefault(x => x.Name == name);
 
@@ -174,18 +190,20 @@ namespace SpeedrunComSharp
         /// <returns></returns>
         public ReadOnlyCollection<Category> GetCategories(
             string gameId, bool miscellaneous = true,
-            CategoryEmbeds embeds = default(CategoryEmbeds),
-            CategoriesOrdering orderBy = default(CategoriesOrdering))
+            CategoryEmbeds embeds = default,
+            CategoriesOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (!miscellaneous)
+            {
                 parameters.Add("miscellaneous=no");
+            }
 
-            var uri = GetGamesUri(string.Format("/{0}/categories{1}", 
-                Uri.EscapeDataString(gameId), 
+            var uri = GetGamesUri(string.Format("/{0}/categories{1}",
+                Uri.EscapeDataString(gameId),
                 parameters.ToParameters()));
 
             return baseClient.DoDataCollectionRequest(uri,
@@ -200,14 +218,14 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, levels will be in the same order as the API.</param>
         /// <returns></returns>
         public ReadOnlyCollection<Level> GetLevels(string gameId,
-            LevelEmbeds embeds = default(LevelEmbeds),
-            LevelsOrdering orderBy = default(LevelsOrdering))
+            LevelEmbeds embeds = default,
+            LevelsOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
-            var uri = GetGamesUri(string.Format("/{0}/levels{1}", 
+            var uri = GetGamesUri(string.Format("/{0}/levels{1}",
                 Uri.EscapeDataString(gameId),
                 parameters.ToParameters()));
 
@@ -222,11 +240,11 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, variables will be in the same order as the API.</param>
         /// <returns></returns>
         public ReadOnlyCollection<Variable> GetVariables(string gameId,
-            VariablesOrdering orderBy = default(VariablesOrdering))
+            VariablesOrdering orderBy = default)
         {
             var parameters = new List<string>(orderBy.ToParameters());
 
-            var uri = GetGamesUri(string.Format("/{0}/variables{1}", 
+            var uri = GetGamesUri(string.Format("/{0}/variables{1}",
                 Uri.EscapeDataString(gameId),
                 parameters.ToParameters()));
 
@@ -242,18 +260,18 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, games will be in the same order as the API.</param>
         /// <returns></returns>
         public ReadOnlyCollection<Game> GetRomHacks(string gameId,
-            GameEmbeds embeds = default(GameEmbeds),
-            GamesOrdering orderBy = default(GamesOrdering))
+            GameEmbeds embeds = default,
+            GamesOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
-            var uri = GetGamesUri(string.Format("/{0}/romhacks{1}", 
+            var uri = GetGamesUri(string.Format("/{0}/romhacks{1}",
                 Uri.EscapeDataString(gameId),
                 parameters.ToParameters()));
 
-            return baseClient.DoDataCollectionRequest(uri, 
+            return baseClient.DoDataCollectionRequest(uri,
                 x => Game.Parse(baseClient, x) as Game);
         }
 
@@ -272,20 +290,34 @@ namespace SpeedrunComSharp
             int? top = null, LeaderboardScope scope = LeaderboardScope.All,
             bool includeMiscellaneousCategories = true, bool skipEmptyLeaderboards = false,
             int? elementsPerPage = null,
-            LeaderboardEmbeds embeds = default(LeaderboardEmbeds))
+            LeaderboardEmbeds embeds = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             if (top.HasValue)
+            {
                 parameters.Add(string.Format("top={0}", top.Value));
+            }
+
             if (scope != LeaderboardScope.All)
+            {
                 parameters.Add(scope.ToParameter());
+            }
+
             if (!includeMiscellaneousCategories)
+            {
                 parameters.Add("miscellaneous=false");
+            }
+
             if (skipEmptyLeaderboards)
+            {
                 parameters.Add("skip-empty=true");
+            }
+
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetGamesUri(string.Format("/{0}/records{1}",
                 Uri.EscapeDataString(gameId),

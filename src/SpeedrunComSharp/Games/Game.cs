@@ -79,7 +79,9 @@ namespace SpeedrunComSharp
 
             var releaseDate = gProperties["release-date"];
             if (!string.IsNullOrEmpty(releaseDate))
+            {
                 game.ReleaseDate = DateTime.Parse(releaseDate, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
 
             game.YearOfRelease = gameElement.released;
             game.Ruleset = Ruleset.Parse(client, gameElement.ruleset);
@@ -88,7 +90,9 @@ namespace SpeedrunComSharp
 
             var created = gameElement.created as string;
             if (!string.IsNullOrEmpty(created))
+            {
                 game.CreationDate = DateTime.Parse(created, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
 
             game.Assets = Assets.Parse(client, gameElement.assets);
 
@@ -98,15 +102,19 @@ namespace SpeedrunComSharp
 
             if (gameElement.moderators is DynamicJsonObject && gameElement.moderators.Properties.ContainsKey("data"))
             {
-                Func<dynamic, User> userParser = x => User.Parse(client, x) as User;
-                ReadOnlyCollection<User> users = client.ParseCollection(gameElement.moderators.data, userParser);
+                User userParser(dynamic x)
+                {
+                    return User.Parse(client, x) as User;
+                }
+
+                ReadOnlyCollection<User> users = client.ParseCollection(gameElement.moderators.data, (Func<dynamic, User>)userParser);
                 game.moderatorUsers = new Lazy<ReadOnlyCollection<User>>(() => users);
             }
             else if (gameElement.moderators is DynamicJsonObject)
             {
                 var moderatorsProperties = gameElement.moderators.Properties as IDictionary<string, dynamic>;
                 game.Moderators = moderatorsProperties.Select(x => Moderator.Parse(client, x)).ToList().AsReadOnly();
-                
+
                 game.moderatorUsers = new Lazy<ReadOnlyCollection<User>>(
                     () =>
                     {
@@ -115,7 +123,7 @@ namespace SpeedrunComSharp
                         if (game.Moderators.Count(x => !x.user.IsValueCreated) > 1)
                         {
                             users = client.Games.GetGame(game.ID, embeds: new GameEmbeds(embedModerators: true)).ModeratorUsers;
-                            
+
                             foreach (var user in users)
                             {
                                 var moderator = game.Moderators.FirstOrDefault(x => x.UserID == user.ID);
@@ -142,7 +150,7 @@ namespace SpeedrunComSharp
             if (properties["platforms"] is IList)
             {
                 game.PlatformIDs = client.ParseCollection<string>(gameElement.platforms);
-                
+
                 if (game.PlatformIDs.Count > 1)
                 {
                     game.platforms = new Lazy<ReadOnlyCollection<Platform>>(
@@ -156,8 +164,12 @@ namespace SpeedrunComSharp
             }
             else
             {
-                Func<dynamic, Platform> platformParser = x => Platform.Parse(client, x) as Platform;
-                ReadOnlyCollection<Platform> platforms = client.ParseCollection(gameElement.platforms.data, platformParser);
+                Platform platformParser(dynamic x)
+                {
+                    return Platform.Parse(client, x) as Platform;
+                }
+
+                ReadOnlyCollection<Platform> platforms = client.ParseCollection(gameElement.platforms.data, (Func<dynamic, Platform>)platformParser);
                 game.platforms = new Lazy<ReadOnlyCollection<Platform>>(() => platforms);
                 game.PlatformIDs = platforms.Select(x => x.ID).ToList().AsReadOnly();
             }
@@ -165,7 +177,7 @@ namespace SpeedrunComSharp
             if (properties["regions"] is IList)
             {
                 game.RegionIDs = client.ParseCollection<string>(gameElement.regions);
-                
+
                 if (game.RegionIDs.Count > 1)
                 {
                     game.regions = new Lazy<ReadOnlyCollection<Region>>(
@@ -179,8 +191,12 @@ namespace SpeedrunComSharp
             }
             else
             {
-                Func<dynamic, Region> regionParser = x => Region.Parse(client, x) as Region;
-                ReadOnlyCollection<Region> regions = client.ParseCollection(gameElement.regions.data, regionParser);
+                Region regionParser(dynamic x)
+                {
+                    return Region.Parse(client, x) as Region;
+                }
+
+                ReadOnlyCollection<Region> regions = client.ParseCollection(gameElement.regions.data, (Func<dynamic, Region>)regionParser);
                 game.regions = new Lazy<ReadOnlyCollection<Region>>(() => regions);
                 game.RegionIDs = regions.Select(x => x.ID).ToList().AsReadOnly();
             }
@@ -191,8 +207,12 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("levels"))
             {
-                Func<dynamic, Level> levelParser = x => Level.Parse(client, x) as Level;
-                ReadOnlyCollection<Level> levels = client.ParseCollection(gameElement.levels.data, levelParser);
+                Level levelParser(dynamic x)
+                {
+                    return Level.Parse(client, x) as Level;
+                }
+
+                ReadOnlyCollection<Level> levels = client.ParseCollection(gameElement.levels.data, (Func<dynamic, Level>)levelParser);
                 game.levels = new Lazy<ReadOnlyCollection<Level>>(() => levels);
             }
             else
@@ -202,35 +222,43 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("categories"))
             {
-                Func<dynamic, Category> categoryParser = x => Category.Parse(client, x) as Category;
-                ReadOnlyCollection<Category> categories = client.ParseCollection(gameElement.categories.data, categoryParser);
-                
+                Category categoryParser(dynamic x)
+                {
+                    return Category.Parse(client, x) as Category;
+                }
+
+                ReadOnlyCollection<Category> categories = client.ParseCollection(gameElement.categories.data, (Func<dynamic, Category>)categoryParser);
+
                 foreach (var category in categories)
                 {
                     category.game = new Lazy<Game>(() => game);
                 }
-                
+
                 game.categories = new Lazy<ReadOnlyCollection<Category>>(() => categories);
             }
             else
             {
-                game.categories = new Lazy<ReadOnlyCollection<Category>>(() => 
+                game.categories = new Lazy<ReadOnlyCollection<Category>>(() =>
                     {
                         var categories = client.Games.GetCategories(game.ID);
-                        
+
                         foreach (var category in categories)
                         {
                             category.game = new Lazy<Game>(() => game);
                         }
-                        
+
                         return categories;
                     });
             }
 
             if (properties.ContainsKey("variables"))
             {
-                Func<dynamic, Variable> variableParser = x => Variable.Parse(client, x) as Variable;
-                ReadOnlyCollection<Variable> variables = client.ParseCollection(gameElement.variables.data, variableParser);
+                Variable variableParser(dynamic x)
+                {
+                    return Variable.Parse(client, x) as Variable;
+                }
+
+                ReadOnlyCollection<Variable> variables = client.ParseCollection(gameElement.variables.data, (Func<dynamic, Variable>)variableParser);
                 game.variables = new Lazy<ReadOnlyCollection<Variable>>(() => variables);
             }
             else
@@ -263,10 +291,10 @@ namespace SpeedrunComSharp
                 game.originalGame = new Lazy<Game>(() => null);
             }
 
-            game.romHacks = new Lazy<ReadOnlyCollection<Game>>(() => 
+            game.romHacks = new Lazy<ReadOnlyCollection<Game>>(() =>
                 {
                     var romHacks = client.Games.GetRomHacks(game.ID);
-                    
+
                     if (romHacks != null)
                     {
                         foreach (var romHack in romHacks)
@@ -274,10 +302,10 @@ namespace SpeedrunComSharp
                             romHack.originalGame = new Lazy<Game>(() => game);
                         }
                     }
-                    
+
                     return romHacks;
                 });
-                 
+
             return game;
         }
 
@@ -288,10 +316,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Game;
-
-            if (other == null)
+            if (!(obj is Game other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

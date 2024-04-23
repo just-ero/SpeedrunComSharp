@@ -10,7 +10,7 @@ namespace SpeedrunComSharp
         #region Links
 
         private Lazy<Level> level;
-        
+
         public Level Level { get { return level.Value; } }
 
         #endregion
@@ -36,9 +36,10 @@ namespace SpeedrunComSharp
 
         public static VariableScope Parse(SpeedrunComClient client, dynamic scopeElement)
         {
-            var scope = new VariableScope();
-
-            scope.Type = parseType(scopeElement.type as string);
+            var scope = new VariableScope
+            {
+                Type = parseType(scopeElement.type as string)
+            };
 
             if (scope.Type == VariableScopeType.SingleLevel)
             {
@@ -56,9 +57,13 @@ namespace SpeedrunComSharp
         public override string ToString()
         {
             if (Type == VariableScopeType.SingleLevel)
+            {
                 return "Single Level: " + (Level.Name ?? "");
+            }
             else
+            {
                 return Type.ToString();
+            }
         }
     }
 }

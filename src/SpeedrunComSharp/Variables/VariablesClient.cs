@@ -6,7 +6,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "variables";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public VariablesClient(SpeedrunComClient baseClient)
         {
@@ -28,7 +28,9 @@ namespace SpeedrunComSharp
             var id = GetVariableIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetVariable(id);
         }
@@ -44,7 +46,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Variable)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }

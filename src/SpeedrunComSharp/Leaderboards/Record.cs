@@ -7,29 +7,47 @@ namespace SpeedrunComSharp
         public int Rank { get; private set; }
 
         private Record() { }
-        
+
         public static new Record Parse(SpeedrunComClient client, dynamic recordElement)
         {
-            var record = new Record();
-
-            record.Rank = recordElement.place;
+            var record = new Record
+            {
+                Rank = recordElement.place
+            };
 
             //Parse potential embeds
 
             var properties = recordElement.Properties as IDictionary<string, dynamic>;
 
             if (properties.ContainsKey("game"))
+            {
                 recordElement.run.game = recordElement.game;
+            }
+
             if (properties.ContainsKey("category"))
+            {
                 recordElement.run.category = recordElement.category;
+            }
+
             if (properties.ContainsKey("level"))
+            {
                 recordElement.run.level = recordElement.level;
+            }
+
             if (properties.ContainsKey("players"))
+            {
                 recordElement.run.players = recordElement.players;
+            }
+
             if (properties.ContainsKey("region"))
+            {
                 recordElement.run.region = recordElement.region;
+            }
+
             if (properties.ContainsKey("platform"))
+            {
                 recordElement.run.platform = recordElement.platform;
+            }
 
             Run.Parse(record, client, recordElement.run);
 
@@ -43,10 +61,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Record;
-
-            if (other == null)
+            if (!(obj is Record other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

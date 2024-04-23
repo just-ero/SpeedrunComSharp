@@ -8,7 +8,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "leaderboards";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public LeaderboardsClient(SpeedrunComClient baseClient)
         {
@@ -26,32 +26,49 @@ namespace SpeedrunComSharp
             EmulatorsFilter emulatorsFilter = EmulatorsFilter.NotSet, bool filterOutRunsWithoutVideo = false,
             TimingMethod? orderBy = null, DateTime? filterOutRunsAfter = null,
             IEnumerable<VariableValue> variableFilters = null,
-            LeaderboardEmbeds embeds = default(LeaderboardEmbeds))
+            LeaderboardEmbeds embeds = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             if (top.HasValue)
+            {
                 parameters.Add(string.Format("top={0}", top.Value));
+            }
+
             if (!string.IsNullOrEmpty(platformId))
+            {
                 parameters.Add(string.Format("platform={0}", Uri.EscapeDataString(platformId)));
+            }
+
             if (!string.IsNullOrEmpty(regionId))
+            {
                 parameters.Add(string.Format("region={0}", Uri.EscapeDataString(regionId)));
+            }
+
             if (emulatorsFilter != EmulatorsFilter.NotSet)
+            {
                 parameters.Add(string.Format("emulators={0}",
                     emulatorsFilter == EmulatorsFilter.OnlyEmulators ? "true" : "false"));
+            }
+
             if (filterOutRunsWithoutVideo)
+            {
                 parameters.Add("video-only=true");
+            }
+
             if (orderBy.HasValue)
             {
                 var timing = orderBy.Value.ToAPIString();
                 parameters.Add(string.Format("timing={0}", timing));
             }
+
             if (filterOutRunsAfter.HasValue)
             {
                 var date = filterOutRunsAfter.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                parameters.Add(string.Format("date={0}", 
+                parameters.Add(string.Format("date={0}",
                     Uri.EscapeDataString(date)));
             }
+
             if (variableFilters != null)
             {
                 foreach (var variableValue in variableFilters)
@@ -95,7 +112,7 @@ namespace SpeedrunComSharp
             EmulatorsFilter emulatorsFilter = EmulatorsFilter.NotSet, bool filterOutRunsWithoutVideo = false,
             TimingMethod? orderBy = null, DateTime? filterOutRunsAfter = null,
             IEnumerable<VariableValue> variableFilters = null,
-            LeaderboardEmbeds embeds = default(LeaderboardEmbeds))
+            LeaderboardEmbeds embeds = default)
         {
             var uri = string.Format("/{0}/category/{1}",
                 Uri.EscapeDataString(gameId),
@@ -133,7 +150,7 @@ namespace SpeedrunComSharp
             EmulatorsFilter emulatorsFilter = EmulatorsFilter.NotSet, bool filterOutRunsWithoutVideo = false,
             TimingMethod? orderBy = null, DateTime? filterOutRunsAfter = null,
             IEnumerable<VariableValue> variableFilters = null,
-            LeaderboardEmbeds embeds = default(LeaderboardEmbeds))
+            LeaderboardEmbeds embeds = default)
         {
             var uri = string.Format("/{0}/level/{1}/{2}",
                 Uri.EscapeDataString(gameId),

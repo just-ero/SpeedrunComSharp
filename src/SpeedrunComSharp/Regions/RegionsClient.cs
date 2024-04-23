@@ -6,7 +6,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "regions";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public RegionsClient(SpeedrunComClient baseClient)
         {
@@ -28,7 +28,9 @@ namespace SpeedrunComSharp
             var id = GetRegionIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetRegion(id);
         }
@@ -44,7 +46,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Region)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }
@@ -56,14 +60,16 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, regions will be in the same order as the API.</param>
         /// <returns></returns>
         public IEnumerable<Region> GetRegions(int? elementsPerPage = null,
-            RegionsOrdering orderBy = default(RegionsOrdering))
+            RegionsOrdering orderBy = default)
         {
             var parameters = new List<string>();
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetRegionsUri(parameters.ToParameters());
 

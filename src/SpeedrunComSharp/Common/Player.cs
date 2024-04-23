@@ -30,7 +30,7 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("uri"))
             {
-                if (playerElement.rel as string == "user")
+                if ((playerElement.rel as string) == "user")
                 {
                     player.UserID = playerElement.id as string;
                     player.user = new Lazy<User>(() => client.Users.GetUser(player.UserID));
@@ -45,7 +45,7 @@ namespace SpeedrunComSharp
             }
             else
             {
-                if (playerElement.rel as string == "user")
+                if ((playerElement.rel as string) == "user")
                 {
                     var user = User.Parse(client, playerElement) as User;
                     player.user = new Lazy<User>(() => user);
@@ -66,16 +66,16 @@ namespace SpeedrunComSharp
 
         public override int GetHashCode()
         {
-            return (UserID ?? string.Empty).GetHashCode() 
+            return (UserID ?? string.Empty).GetHashCode()
                 ^ (GuestName ?? string.Empty).GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
-            var player = obj as Player;
-
-            if (player == null)
+            if (!(obj is Player player))
+            {
                 return false;
+            }
 
             return UserID == player.UserID
                 && GuestName == player.GuestName;

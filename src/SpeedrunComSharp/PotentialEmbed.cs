@@ -17,7 +17,7 @@ namespace SpeedrunComSharp
 
             if (element == null)
             {
-                potentialEmbed.Object = new Lazy<G>(() => default(G));
+                potentialEmbed.Object = new Lazy<G>(() => default);
             }
             else if (element is string)
             {
@@ -29,7 +29,9 @@ namespace SpeedrunComSharp
                 var parsedObject = objectParser(element.data);
                 potentialEmbed.Object = new Lazy<G>(() => parsedObject);
                 if (parsedObject != null)
+                {
                     potentialEmbed.ID = parsedObject.ID;
+                }
             }
 
             return potentialEmbed;

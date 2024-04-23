@@ -39,16 +39,19 @@ namespace SpeedrunComSharp
         public VariableValue CreateCustomValue(string customValue)
         {
             if (!IsUserDefined)
+            {
                 throw new NotSupportedException("This variable doesn't support custom values.");
-            
+            }
+
             return VariableValue.CreateCustomValue(client, ID, customValue);
         }
 
         public static Variable Parse(SpeedrunComClient client, dynamic variableElement)
         {
-            var variable = new Variable();
-
-            variable.client = client;
+            var variable = new Variable
+            {
+                client = client
+            };
 
             var properties = variableElement.Properties as IDictionary<string, dynamic>;
             var links = properties["links"] as IEnumerable<dynamic>;
@@ -75,7 +78,9 @@ namespace SpeedrunComSharp
             var valuesProperties = variableElement.values.Properties as IDictionary<string, dynamic>;
             var defaultValue = valuesProperties["default"] as string;
             if (!string.IsNullOrEmpty(defaultValue))
+            {
                 variable.DefaultValue = variable.Values.FirstOrDefault(x => x.ID == defaultValue);
+            }
 
             variable.IsSubcategory = (bool)(properties["is-subcategory"] ?? false);
 
@@ -122,10 +127,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Variable;
-
-            if (other == null)
+            if (!(obj is Variable other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

@@ -37,14 +37,17 @@ namespace SpeedrunComSharp
         public static Region Parse(SpeedrunComClient client, dynamic regionElement)
         {
             if (regionElement is ArrayList)
+            {
                 return null;
+            }
 
-            var region = new Region();
+            var region = new Region
+            {
+                //Parse Attributes
 
-            //Parse Attributes
-
-            region.ID = regionElement.id as string;
-            region.Name = regionElement.name as string;
+                ID = regionElement.id as string,
+                Name = regionElement.name as string
+            };
 
             //Parse Links
 
@@ -61,10 +64,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var region = obj as Region;
-
-            if (region == null)
+            if (!(obj is Region region))
+            {
                 return false;
+            }
 
             return ID == region.ID;
         }

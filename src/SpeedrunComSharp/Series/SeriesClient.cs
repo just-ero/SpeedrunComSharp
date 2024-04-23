@@ -7,7 +7,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "series";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public SeriesClient(SpeedrunComClient baseClient)
         {
@@ -25,12 +25,14 @@ namespace SpeedrunComSharp
         /// <param name="siteUri">The site URI for the series.</param>
         /// <param name="embeds">Optional. If included, will dictate the embedded resources included in the response.</param>
         /// <returns></returns>
-        public Series GetSeriesFromSiteUri(string siteUri, SeriesEmbeds embeds = default(SeriesEmbeds))
+        public Series GetSeriesFromSiteUri(string siteUri, SeriesEmbeds embeds = default)
         {
             var id = GetSeriesIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetSingleSeries(id, embeds);
         }
@@ -46,7 +48,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Series)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }
@@ -64,24 +68,32 @@ namespace SpeedrunComSharp
         public IEnumerable<Series> GetMultipleSeries(
            string name = null, string abbreviation = null,
            string moderatorId = null, int? elementsPerPage = null,
-           SeriesEmbeds embeds = default(SeriesEmbeds),
-           SeriesOrdering orderBy = default(SeriesOrdering))
+           SeriesEmbeds embeds = default,
+           SeriesOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (!string.IsNullOrEmpty(name))
+            {
                 parameters.Add(string.Format("name={0}", Uri.EscapeDataString(name)));
+            }
 
             if (!string.IsNullOrEmpty(abbreviation))
+            {
                 parameters.Add(string.Format("abbreviation={0}", Uri.EscapeDataString(abbreviation)));
+            }
 
             if (!string.IsNullOrEmpty(moderatorId))
+            {
                 parameters.Add(string.Format("moderator={0}", Uri.EscapeDataString(moderatorId)));
+            }
 
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetSeriesUri(parameters.ToParameters());
             return baseClient.DoPaginatedRequest(uri,
@@ -94,7 +106,7 @@ namespace SpeedrunComSharp
         /// <param name="seriesId">The ID of the series.</param>
         /// <param name="embeds">Optional. If included, will dictate the additional resources embedded in the response.</param>
         /// <returns></returns>
-        public Series GetSingleSeries(string seriesId, SeriesEmbeds embeds = default(SeriesEmbeds))
+        public Series GetSingleSeries(string seriesId, SeriesEmbeds embeds = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
@@ -125,30 +137,42 @@ namespace SpeedrunComSharp
             string name = null, int? yearOfRelease = null,
             string platformId = null, string regionId = null,
             string moderatorId = null, int? elementsPerPage = null,
-            GameEmbeds embeds = default(GameEmbeds),
-            GamesOrdering orderBy = default(GamesOrdering))
+            GameEmbeds embeds = default,
+            GamesOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (!string.IsNullOrEmpty(name))
+            {
                 parameters.Add(string.Format("name={0}", Uri.EscapeDataString(name)));
+            }
 
             if (yearOfRelease.HasValue)
+            {
                 parameters.Add(string.Format("released={0}", yearOfRelease.Value));
+            }
 
             if (!string.IsNullOrEmpty(platformId))
+            {
                 parameters.Add(string.Format("platform={0}", Uri.EscapeDataString(platformId)));
+            }
 
             if (!string.IsNullOrEmpty(regionId))
+            {
                 parameters.Add(string.Format("region={0}", Uri.EscapeDataString(regionId)));
+            }
 
             if (!string.IsNullOrEmpty(moderatorId))
+            {
                 parameters.Add(string.Format("moderator={0}", Uri.EscapeDataString(moderatorId)));
+            }
 
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetSeriesUri(string.Format("/{0}/games{1}",
                 Uri.EscapeDataString(seriesId),

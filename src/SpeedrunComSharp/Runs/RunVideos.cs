@@ -16,10 +16,14 @@ namespace SpeedrunComSharp
             if (!string.IsNullOrEmpty(videoUri))
             {
                 if (!videoUri.StartsWith("http"))
+                {
                     videoUri = "http://" + videoUri;
+                }
 
                 if (Uri.IsWellFormedUriString(videoUri, UriKind.Absolute))
+                {
                     return new Uri(videoUri);
+                }
             }
 
             return null;
@@ -28,13 +32,16 @@ namespace SpeedrunComSharp
         public static RunVideos Parse(SpeedrunComClient client, dynamic videosElement)
         {
             if (videosElement == null)
+            {
                 return null;
+            }
 
-            var videos = new RunVideos();
+            var videos = new RunVideos
+            {
+                Text = videosElement.text as string,
 
-            videos.Text = videosElement.text as string;
-
-            videos.Links = client.ParseCollection(videosElement.links, new Func<dynamic, Uri>(parseVideoLink));
+                Links = client.ParseCollection(videosElement.links, new Func<dynamic, Uri>(parseVideoLink))
+            };
 
             return videos;
         }

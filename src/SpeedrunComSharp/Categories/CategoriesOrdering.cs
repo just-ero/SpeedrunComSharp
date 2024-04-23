@@ -21,7 +21,9 @@ namespace SpeedrunComSharp
         {
             var isDescending = ((int)ordering & 1) == 1;
             if (isDescending)
+            {
                 ordering = (CategoriesOrdering)((int)ordering - 1);
+            }
 
             var str = "";
 
@@ -36,9 +38,14 @@ namespace SpeedrunComSharp
             var list = new List<string>();
 
             if (!string.IsNullOrEmpty(str))
+            {
                 list.Add(string.Format("orderby={0}", str));
+            }
+
             if (isDescending)
+            {
                 list.Add("direction=desc");
+            }
 
             return list;
         }

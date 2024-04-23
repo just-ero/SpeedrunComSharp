@@ -3,12 +3,12 @@
     public struct LeaderboardEmbeds
     {
         private Embeds embeds;
-        private bool isConstructed;
+        private readonly bool isConstructed;
 
-        public bool EmbedGame 
-        { 
-            get { return embeds["game"]; } 
-            set { embeds["game"] = value; } 
+        public bool EmbedGame
+        {
+            get { return embeds["game"]; }
+            set { embeds["game"] = value; }
         }
 
         public bool EmbedCategory

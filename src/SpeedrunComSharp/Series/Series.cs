@@ -39,19 +39,22 @@ namespace SpeedrunComSharp
 
         public static Series Parse(SpeedrunComClient client, dynamic seriesElement)
         {
-            var series = new Series();
+            var series = new Series
+            {
+                //Parse Attributes
 
-            //Parse Attributes
-
-            series.ID = seriesElement.id as string;
-            series.Name = seriesElement.names.international as string;
-            series.JapaneseName = seriesElement.names.japanese as string;
-            series.WebLink = new Uri(seriesElement.weblink as string);
-            series.Abbreviation = seriesElement.abbreviation as string;
+                ID = seriesElement.id as string,
+                Name = seriesElement.names.international as string,
+                JapaneseName = seriesElement.names.japanese as string,
+                WebLink = new Uri(seriesElement.weblink as string),
+                Abbreviation = seriesElement.abbreviation as string
+            };
 
             var created = seriesElement.created as string;
             if (!string.IsNullOrEmpty(created))
+            {
                 series.CreationDate = DateTime.Parse(created, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
 
             series.Assets = Assets.Parse(client, seriesElement.assets);
 
@@ -59,8 +62,12 @@ namespace SpeedrunComSharp
 
             if (seriesElement.moderators is DynamicJsonObject && seriesElement.moderators.Properties.ContainsKey("data"))
             {
-                Func<dynamic, User> userParser = x => User.Parse(client, x) as User;
-                ReadOnlyCollection<User> users = client.ParseCollection(seriesElement.moderators.data, userParser);
+                User userParser(dynamic x)
+                {
+                    return User.Parse(client, x) as User;
+                }
+
+                ReadOnlyCollection<User> users = client.ParseCollection(seriesElement.moderators.data, (Func<dynamic, User>)userParser);
                 series.moderatorUsers = new Lazy<ReadOnlyCollection<User>>(() => users);
             }
             else if (seriesElement.moderators is DynamicJsonObject)
@@ -118,10 +125,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Series;
-
-            if (other == null)
+            if (!(obj is Series other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

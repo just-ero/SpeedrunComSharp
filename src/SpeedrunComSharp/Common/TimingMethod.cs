@@ -20,6 +20,7 @@ namespace SpeedrunComSharp
                 case TimingMethod.GameTime:
                     return "ingame";
             }
+
             throw new ArgumentException("timingMethod");
         }
 

@@ -64,17 +64,25 @@ namespace SpeedrunComSharp
 
             var emulators = leaderboardElement.emulators as string;
             if (emulators == "true")
+            {
                 leaderboard.EmulatorFilter = EmulatorsFilter.OnlyEmulators;
+            }
             else if (emulators == "false")
+            {
                 leaderboard.EmulatorFilter = EmulatorsFilter.NoEmulators;
+            }
             else
+            {
                 leaderboard.EmulatorFilter = EmulatorsFilter.NotSet;
+            }
 
             leaderboard.AreRunsWithoutVideoFilteredOut = properties["video-only"];
 
             //TODO Not actually optional
             if (leaderboardElement.timing != null)
+            {
                 leaderboard.OrderedBy = TimingMethodHelpers.FromString(leaderboardElement.timing as string);
+            }
 
             if (leaderboardElement.values is DynamicJsonObject)
             {
@@ -86,8 +94,12 @@ namespace SpeedrunComSharp
                 leaderboard.VariableFilters = new List<VariableValue>().AsReadOnly();
             }
 
-            Func<dynamic, Record> recordParser = x => Record.Parse(client, x) as Record;
-            leaderboard.Records = client.ParseCollection(leaderboardElement.runs, recordParser);
+            Record recordParser(dynamic x)
+            {
+                return Record.Parse(client, x) as Record;
+            }
+
+            leaderboard.Records = client.ParseCollection(leaderboardElement.runs, (Func<dynamic, Record>)recordParser);
 
             //Parse Links
 
@@ -113,7 +125,9 @@ namespace SpeedrunComSharp
                 var category = Category.Parse(client, properties["category"].data) as Category;
                 leaderboard.category = new Lazy<Category>(() => category);
                 if (category != null)
+                {
                     leaderboard.CategoryID = category.ID;
+                }
             }
 
             if (properties["level"] == null)
@@ -130,7 +144,9 @@ namespace SpeedrunComSharp
                 var level = Level.Parse(client, properties["level"].data) as Level;
                 leaderboard.level = new Lazy<Level>(() => level);
                 if (level != null)
+                {
                     leaderboard.LevelID = level.ID;
+                }
             }
 
             if (properties["platform"] == null)
@@ -147,7 +163,9 @@ namespace SpeedrunComSharp
                 var platform = Platform.Parse(client, properties["platform"].data) as Platform;
                 leaderboard.platformFilter = new Lazy<Platform>(() => platform);
                 if (platform != null)
+                {
                     leaderboard.PlatformIDOfFilter = platform.ID;
+                }
             }
 
             if (properties["region"] == null)
@@ -164,15 +182,21 @@ namespace SpeedrunComSharp
                 var region = Region.Parse(client, properties["region"].data) as Region;
                 leaderboard.regionFilter = new Lazy<Region>(() => region);
                 if (region != null)
+                {
                     leaderboard.RegionIDOfFilter = region.ID;
+                }
             }
 
             //Parse Embeds
 
             if (properties.ContainsKey("players"))
             {
-                Func<dynamic, Player> playerParser = x => Player.Parse(client, x) as Player;
-                var players = client.ParseCollection(leaderboardElement.players.data, playerParser) as ReadOnlyCollection<Player>;
+                Player playerParser(dynamic x)
+                {
+                    return Player.Parse(client, x) as Player;
+                }
+
+                var players = client.ParseCollection(leaderboardElement.players.data, (Func<dynamic, Player>)playerParser) as ReadOnlyCollection<Player>;
 
                 foreach (var record in leaderboard.Records)
                 {
@@ -188,14 +212,18 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("regions"))
             {
-                Func<dynamic, Region> regionParser = x => Region.Parse(client, x) as Region;
-                var regions = client.ParseCollection(leaderboardElement.regions.data, regionParser) as ReadOnlyCollection<Region>;
-                
+                Region regionParser(dynamic x)
+                {
+                    return Region.Parse(client, x) as Region;
+                }
+
+                var regions = client.ParseCollection(leaderboardElement.regions.data, (Func<dynamic, Region>)regionParser) as ReadOnlyCollection<Region>;
+
                 foreach (var record in leaderboard.Records)
                 {
                     record.System.region = new Lazy<Region>(() => regions.FirstOrDefault(x => x.ID == record.System.RegionID));
                 }
-                
+
                 leaderboard.usedRegions = new Lazy<ReadOnlyCollection<Region>>(() => regions);
             }
             else
@@ -205,8 +233,12 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("platforms"))
             {
-                Func<dynamic, Platform> platformParser = x => Platform.Parse(client, x) as Platform;
-                var platforms = client.ParseCollection(leaderboardElement.platforms.data, platformParser) as ReadOnlyCollection<Platform>;
+                Platform platformParser(dynamic x)
+                {
+                    return Platform.Parse(client, x) as Platform;
+                }
+
+                var platforms = client.ParseCollection(leaderboardElement.platforms.data, (Func<dynamic, Platform>)platformParser) as ReadOnlyCollection<Platform>;
 
                 foreach (var record in leaderboard.Records)
                 {
@@ -220,21 +252,25 @@ namespace SpeedrunComSharp
                 leaderboard.usedPlatforms = new Lazy<ReadOnlyCollection<Platform>>(() => leaderboard.Records.Select(x => x.Platform).Distinct().Where(x => x != null).ToList().AsReadOnly());
             }
 
-            Action<ReadOnlyCollection<Variable>> patchVariablesOfRecords = variables =>
+            void patchVariablesOfRecords(ReadOnlyCollection<Variable> variables)
+            {
+                foreach (var record in leaderboard.Records)
                 {
-                    foreach (var record in leaderboard.Records)
+                    foreach (var value in record.VariableValues)
                     {
-                        foreach (var value in record.VariableValues)
-                        {
-                            value.variable = new Lazy<Variable>(() => variables.FirstOrDefault(x => x.ID == value.VariableID));
-                        }
+                        value.variable = new Lazy<Variable>(() => variables.FirstOrDefault(x => x.ID == value.VariableID));
                     }
-                };
+                }
+            }
 
             if (properties.ContainsKey("variables"))
             {
-                Func<dynamic, Variable> variableParser = x => Variable.Parse(client, x) as Variable;
-                var variables = client.ParseCollection(leaderboardElement.variables.data, variableParser) as ReadOnlyCollection<Variable>;
+                Variable variableParser(dynamic x)
+                {
+                    return Variable.Parse(client, x) as Variable;
+                }
+
+                var variables = client.ParseCollection(leaderboardElement.variables.data, (Func<dynamic, Variable>)variableParser) as ReadOnlyCollection<Variable>;
 
                 patchVariablesOfRecords(variables);
 

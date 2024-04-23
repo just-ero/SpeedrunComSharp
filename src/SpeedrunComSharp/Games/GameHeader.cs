@@ -18,14 +18,15 @@ namespace SpeedrunComSharp
 
         public static GameHeader Parse(SpeedrunComClient client, dynamic gameHeaderElement)
         {
-            var gameHeader = new GameHeader();
-
-            gameHeader.ID = gameHeaderElement.id as string;
-            gameHeader.Name = gameHeaderElement.names.international as string;
-            gameHeader.JapaneseName = gameHeaderElement.names.japanese as string;
-            gameHeader.TwitchName = gameHeaderElement.names.twitch as string;
-            gameHeader.WebLink = new Uri(gameHeaderElement.weblink as string);
-            gameHeader.Abbreviation = gameHeaderElement.abbreviation as string;
+            var gameHeader = new GameHeader
+            {
+                ID = gameHeaderElement.id as string,
+                Name = gameHeaderElement.names.international as string,
+                JapaneseName = gameHeaderElement.names.japanese as string,
+                TwitchName = gameHeaderElement.names.twitch as string,
+                WebLink = new Uri(gameHeaderElement.weblink as string),
+                Abbreviation = gameHeaderElement.abbreviation as string
+            };
 
             return gameHeader;
         }
@@ -37,10 +38,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as GameHeader;
-
-            if (other == null)
+            if (!(obj is GameHeader other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

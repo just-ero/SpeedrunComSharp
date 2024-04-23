@@ -21,15 +21,18 @@ namespace SpeedrunComSharp
         public static Platform Parse(SpeedrunComClient client, dynamic platformElement)
         {
             if (platformElement is ArrayList)
+            {
                 return null;
+            }
 
-            var platform = new Platform();
+            var platform = new Platform
+            {
+                //Parse Attributes
 
-            //Parse Attributes
-
-            platform.ID = platformElement.id as string;
-            platform.Name = platformElement.name as string;
-            platform.YearOfRelease = (int)platformElement.released;
+                ID = platformElement.id as string,
+                Name = platformElement.name as string,
+                YearOfRelease = (int)platformElement.released
+            };
 
             //Parse Links
 
@@ -46,10 +49,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Platform;
-
-            if (other == null)
+            if (!(obj is Platform other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

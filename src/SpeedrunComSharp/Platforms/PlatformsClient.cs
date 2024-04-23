@@ -7,7 +7,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "platforms";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public PlatformsClient(SpeedrunComClient baseClient)
         {
@@ -29,7 +29,9 @@ namespace SpeedrunComSharp
             var id = GetPlatformIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetPlatform(id);
         }
@@ -45,7 +47,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Platform)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }
@@ -57,14 +61,16 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, platforms will be in the same order as the API.</param>
         /// <returns></returns>
         public IEnumerable<Platform> GetPlatforms(int? elementsPerPage = null,
-            PlatformsOrdering orderBy = default(PlatformsOrdering))
+            PlatformsOrdering orderBy = default)
         {
             var parameters = new List<string>();
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetPlatformsUri(parameters.ToParameters());
 

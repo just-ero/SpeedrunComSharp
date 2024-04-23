@@ -8,7 +8,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "levels";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public LevelsClient(SpeedrunComClient baseClient)
         {
@@ -26,12 +26,14 @@ namespace SpeedrunComSharp
         /// <param name="siteUri">The site URI for the level.</param>
         /// <param name="embeds">Optional. If included, will dictate the embedded resources included in the response.</param>
         /// <returns></returns>
-        public Level GetLevelFromSiteUri(string siteUri, LevelEmbeds embeds = default(LevelEmbeds))
+        public Level GetLevelFromSiteUri(string siteUri, LevelEmbeds embeds = default)
         {
             var id = GetLevelIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetLevel(id, embeds);
         }
@@ -47,7 +49,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Level)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }
@@ -58,13 +62,13 @@ namespace SpeedrunComSharp
         /// <param name="levelId">The ID for the level.</param>
         /// <param name="embeds">Optional. If included, will dictate the embedded resources included in the response.</param>
         /// <returns></returns>
-        public Level GetLevel(string levelId, 
-            LevelEmbeds embeds = default(LevelEmbeds))
+        public Level GetLevel(string levelId,
+            LevelEmbeds embeds = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             var uri = GetLevelsUri(string.Format("/{0}{1}",
-                Uri.EscapeDataString(levelId), 
+                Uri.EscapeDataString(levelId),
                 parameters.ToParameters()));
 
             var result = baseClient.DoRequest(uri);
@@ -82,18 +86,20 @@ namespace SpeedrunComSharp
         /// <returns></returns>
         public ReadOnlyCollection<Category> GetCategories(
             string levelId, bool miscellaneous = true,
-            CategoryEmbeds embeds = default(CategoryEmbeds),
-            CategoriesOrdering orderBy = default(CategoriesOrdering))
+            CategoryEmbeds embeds = default,
+            CategoriesOrdering orderBy = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             parameters.AddRange(orderBy.ToParameters());
 
             if (!miscellaneous)
+            {
                 parameters.Add("miscellaneous=no");
+            }
 
-            var uri = GetLevelsUri(string.Format("/{0}/categories{1}", 
-                Uri.EscapeDataString(levelId), 
+            var uri = GetLevelsUri(string.Format("/{0}/categories{1}",
+                Uri.EscapeDataString(levelId),
                 parameters.ToParameters()));
 
             return baseClient.DoDataCollectionRequest<Category>(uri,
@@ -107,11 +113,11 @@ namespace SpeedrunComSharp
         /// <param name="orderBy">Optional. If omitted, variables will be in the same order as the API.</param>
         /// <returns></returns>
         public ReadOnlyCollection<Variable> GetVariables(string levelId,
-            VariablesOrdering orderBy = default(VariablesOrdering))
+            VariablesOrdering orderBy = default)
         {
             var parameters = new List<string>(orderBy.ToParameters());
 
-            var uri = GetLevelsUri(string.Format("/{0}/variables{1}", 
+            var uri = GetLevelsUri(string.Format("/{0}/variables{1}",
                 Uri.EscapeDataString(levelId),
                 parameters.ToParameters()));
 
@@ -131,16 +137,24 @@ namespace SpeedrunComSharp
         public IEnumerable<Leaderboard> GetRecords(string levelId,
            int? top = null, bool skipEmptyLeaderboards = false,
            int? elementsPerPage = null,
-           LeaderboardEmbeds embeds = default(LeaderboardEmbeds))
+           LeaderboardEmbeds embeds = default)
         {
             var parameters = new List<string>() { embeds.ToString() };
 
             if (top.HasValue)
+            {
                 parameters.Add(string.Format("top={0}", top.Value));
+            }
+
             if (skipEmptyLeaderboards)
+            {
                 parameters.Add("skip-empty=true");
+            }
+
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             var uri = GetLevelsUri(string.Format("/{0}/records{1}",
                 Uri.EscapeDataString(levelId),

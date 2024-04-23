@@ -21,7 +21,9 @@ namespace SpeedrunComSharp
             get
             {
                 if (AccessToken == null)
+                {
                     return false;
+                }
 
                 try
                 {
@@ -99,7 +101,7 @@ namespace SpeedrunComSharp
             }
         }
 
-        public SpeedrunComClient(string userAgent = "SpeedRunComSharp/1.0", 
+        public SpeedrunComClient(string userAgent = "SpeedRunComSharp/1.0",
             string accessToken = null, int maxCacheElements = 50,
             TimeSpan? timeout = null)
         {
@@ -150,7 +152,9 @@ namespace SpeedrunComSharp
                 var link = links.FirstOrDefault(x => x.Relation == APIHttpHeaderRelation);
 
                 if (link == null)
+                {
                     return null;
+                }
 
                 var uri = link.Uri;
                 var elementDescription = ElementDescription.ParseUri(uri);
@@ -165,18 +169,20 @@ namespace SpeedrunComSharp
 
         internal ReadOnlyCollection<T> ParseCollection<T>(dynamic collection, Func<dynamic, T> parser)
         {
-            var enumerable = collection as IEnumerable<dynamic>;
-            if (enumerable == null)
+            if (!(collection is IEnumerable<dynamic> enumerable))
+            {
                 return new List<T>(new T[0]).AsReadOnly();
+            }
 
             return enumerable.Select(parser).ToList().AsReadOnly();
         }
 
         internal ReadOnlyCollection<T> ParseCollection<T>(dynamic collection)
         {
-            var enumerable = collection as IEnumerable<dynamic>;
-            if (enumerable == null)
+            if (!(collection is IEnumerable<dynamic> enumerable))
+            {
                 return new List<T>(new T[0]).AsReadOnly();
+            }
 
             return enumerable.OfType<T>().ToList().AsReadOnly();
         }
@@ -191,7 +197,9 @@ namespace SpeedrunComSharp
                 return new APIException(json.message as string, errors.Select(x => x as string));
             }
             else
+            {
                 return new APIException(json.message as string);
+            }
         }
 
         internal dynamic DoPostRequest(Uri uri, string postBody)
@@ -266,7 +274,9 @@ namespace SpeedrunComSharp
                 Cache.Add(uri, result);
 
                 while (Cache.Count > MaxCacheElements)
+                {
                     Cache.Remove(Cache.Keys.First());
+                }
 
                 return result;
             }
@@ -275,9 +285,10 @@ namespace SpeedrunComSharp
         internal ReadOnlyCollection<T> DoDataCollectionRequest<T>(Uri uri, Func<dynamic, T> parser)
         {
             var result = DoRequest(uri);
-            var elements = result.data as IEnumerable<dynamic>;
-            if (elements == null)
+            if (!(result.data is IEnumerable<dynamic> elements))
+            {
                 return new ReadOnlyCollection<T>(new T[0]);
+            }
 
             return elements.Select(parser).ToList().AsReadOnly();
         }

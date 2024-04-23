@@ -13,7 +13,7 @@
         /// <param name="embedGame">Dictates whether a Game object is included in the response.</param>
         /// <param name="embedVariables">Dictates whether a Collection of Variable objects is included in the response.</param>
         public CategoryEmbeds(
-            bool embedGame = false, 
+            bool embedGame = false,
             bool embedVariables = false)
         {
             embeds = new Embeds();

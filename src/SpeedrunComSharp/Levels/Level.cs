@@ -32,16 +32,19 @@ namespace SpeedrunComSharp
         public static Level Parse(SpeedrunComClient client, dynamic levelElement)
         {
             if (levelElement is ArrayList)
+            {
                 return null;
+            }
 
-            var level = new Level();
+            var level = new Level
+            {
+                //Parse Attributes
 
-            //Parse Attributes
-
-            level.ID = levelElement.id as string;
-            level.Name = levelElement.name as string;
-            level.WebLink = new Uri(levelElement.weblink as string);
-            level.Rules = levelElement.rules;
+                ID = levelElement.id as string,
+                Name = levelElement.name as string,
+                WebLink = new Uri(levelElement.weblink as string),
+                Rules = levelElement.rules
+            };
 
             //Parse Links
 
@@ -54,8 +57,12 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("categories"))
             {
-                Func<dynamic, Category> categoryParser = x => Category.Parse(client, x) as Category;
-                ReadOnlyCollection<Category> categories = client.ParseCollection(levelElement.categories.data, categoryParser);
+                Category categoryParser(dynamic x)
+                {
+                    return Category.Parse(client, x) as Category;
+                }
+
+                ReadOnlyCollection<Category> categories = client.ParseCollection(levelElement.categories.data, (Func<dynamic, Category>)categoryParser);
                 level.categories = new Lazy<ReadOnlyCollection<Category>>(() => categories);
             }
             else
@@ -65,8 +72,12 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("variables"))
             {
-                Func<dynamic, Variable> variableParser = x => Variable.Parse(client, x) as Variable;
-                ReadOnlyCollection<Variable> variables = client.ParseCollection(levelElement.variables.data, variableParser);
+                Variable variableParser(dynamic x)
+                {
+                    return Variable.Parse(client, x) as Variable;
+                }
+
+                ReadOnlyCollection<Variable> variables = client.ParseCollection(levelElement.variables.data, (Func<dynamic, Variable>)variableParser);
                 level.variables = new Lazy<ReadOnlyCollection<Variable>>(() => variables);
             }
             else
@@ -86,10 +97,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Level;
-
-            if (other == null)
+            if (!(obj is Level other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

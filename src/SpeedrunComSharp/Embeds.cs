@@ -15,25 +15,35 @@ namespace SpeedrunComSharp
                 MakeSureInit();
 
                 if (embedDictionary.ContainsKey(name))
+                {
                     return embedDictionary[name];
+                }
                 else
+                {
                     return false;
+                }
             }
             set
             {
                 MakeSureInit();
 
                 if (embedDictionary.ContainsKey(name))
+                {
                     embedDictionary[name] = value;
+                }
                 else
+                {
                     embedDictionary.Add(name, value);
+                }
             }
         }
 
         private void MakeSureInit()
         {
             if (embedDictionary == null)
+            {
                 embedDictionary = new Dictionary<string, bool>();
+            }
         }
 
         public override string ToString()
@@ -41,7 +51,9 @@ namespace SpeedrunComSharp
             MakeSureInit();
 
             if (!embedDictionary.Values.Any(x => x))
+            {
                 return "";
+            }
 
             return "embed=" +
                 embedDictionary

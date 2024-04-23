@@ -6,7 +6,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "guests";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public GuestsClient(SpeedrunComClient baseClient)
         {
@@ -28,7 +28,9 @@ namespace SpeedrunComSharp
             var id = GetGuestIDFromSiteUri(siteUri);
 
             if (string.IsNullOrEmpty(id))
+            {
                 return null;
+            }
 
             return GetGuest(id);
         }
@@ -44,7 +46,9 @@ namespace SpeedrunComSharp
 
             if (elementDescription == null
                 || elementDescription.Type != ElementType.Guest)
+            {
                 return null;
+            }
 
             return elementDescription.ID;
         }

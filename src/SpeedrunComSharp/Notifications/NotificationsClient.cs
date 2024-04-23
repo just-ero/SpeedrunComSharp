@@ -7,7 +7,7 @@ namespace SpeedrunComSharp
     {
         public const string Name = "notifications";
 
-        private SpeedrunComClient baseClient;
+        private readonly SpeedrunComClient baseClient;
 
         public NotificationsClient(SpeedrunComClient baseClient)
         {
@@ -27,16 +27,18 @@ namespace SpeedrunComSharp
         /// <returns></returns>
         public IEnumerable<Notification> GetNotifications(
             int? elementsPerPage = null,
-            NotificationsOrdering ordering = default(NotificationsOrdering))
+            NotificationsOrdering ordering = default)
         {
             var parameters = new List<string>();
 
             if (elementsPerPage.HasValue)
+            {
                 parameters.Add(string.Format("max={0}", elementsPerPage.Value));
+            }
 
             parameters.AddRange(ordering.ToParameters());
 
-            var uri = GetNotificationsUri(string.Format("{0}", 
+            var uri = GetNotificationsUri(string.Format("{0}",
                 parameters.ToParameters()));
 
             return baseClient.DoPaginatedRequest<Notification>(uri,

@@ -44,7 +44,7 @@ namespace SpeedrunComSharp
 
             status.Type = ParseType(statusElement.status as string);
 
-            if (status.Type == RunStatusType.Rejected 
+            if (status.Type == RunStatusType.Rejected
                 || status.Type == RunStatusType.Verified)
             {
                 status.ExaminerUserID = statusElement.examiner as string;
@@ -54,7 +54,9 @@ namespace SpeedrunComSharp
                 {
                     var date = properties["verify-date"] as string;
                     if (!string.IsNullOrEmpty(date))
+                    {
                         status.VerifyDate = DateTime.Parse(date, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                    }
                 }
             }
             else
@@ -73,9 +75,13 @@ namespace SpeedrunComSharp
         public override string ToString()
         {
             if (Type == RunStatusType.Rejected)
+            {
                 return "Rejected:" + Reason;
+            }
             else
+            {
                 return Type.ToString();
+            }
         }
     }
 }

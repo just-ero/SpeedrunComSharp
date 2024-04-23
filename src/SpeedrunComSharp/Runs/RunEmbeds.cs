@@ -4,10 +4,10 @@
     {
         private Embeds embeds;
 
-        public bool EmbedGame 
-        { 
-            get { return embeds["game"]; } 
-            set { embeds["game"] = value; } 
+        public bool EmbedGame
+        {
+            get { return embeds["game"]; }
+            set { embeds["game"] = value; }
         }
 
         public bool EmbedCategory

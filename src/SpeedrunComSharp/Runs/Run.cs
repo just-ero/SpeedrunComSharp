@@ -54,11 +54,14 @@ namespace SpeedrunComSharp
             run.Comment = runElement.comment as string;
             run.Status = RunStatus.Parse(client, runElement.status) as RunStatus;
 
-            Func<dynamic, Player> parsePlayer = x => Player.Parse(client, x) as Player;
+            Player parsePlayer(dynamic x)
+            {
+                return Player.Parse(client, x) as Player;
+            }
 
             if (runElement.players is IEnumerable<dynamic>)
             {
-                run.Players = client.ParseCollection(runElement.players, parsePlayer);
+                run.Players = client.ParseCollection(runElement.players, (Func<dynamic, Player>)parsePlayer);
             }
             else if (runElement.players is System.Collections.ArrayList && runElement.players.Count == 0)
             {
@@ -66,16 +69,20 @@ namespace SpeedrunComSharp
             }
             else
             {
-                run.Players = client.ParseCollection(runElement.players.data, parsePlayer);
+                run.Players = client.ParseCollection(runElement.players.data, (Func<dynamic, Player>)parsePlayer);
             }
 
             var runDate = runElement.date;
             if (!string.IsNullOrEmpty(runDate))
+            {
                 run.Date = DateTime.Parse(runDate, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
 
             var dateSubmitted = runElement.submitted;
             if (!string.IsNullOrEmpty(dateSubmitted))
+            {
                 run.DateSubmitted = DateTime.Parse(dateSubmitted, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            }
 
             run.Times = RunTimes.Parse(client, runElement.times) as RunTimes;
             run.System = RunSystem.Parse(client, runElement.system) as RunSystem;
@@ -126,7 +133,9 @@ namespace SpeedrunComSharp
                 var category = Category.Parse(client, properties["category"].data) as Category;
                 run.category = new Lazy<Category>(() => category);
                 if (category != null)
+                {
                     run.CategoryID = category.ID;
+                }
             }
 
             if (properties["level"] == null)
@@ -143,7 +152,9 @@ namespace SpeedrunComSharp
                 var level = Level.Parse(client, properties["level"].data) as Level;
                 run.level = new Lazy<Level>(() => level);
                 if (level != null)
+                {
                     run.LevelID = level.ID;
+                }
             }
 
             if (properties.ContainsKey("platform"))
@@ -184,10 +195,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Run;
-
-            if (other == null)
+            if (!(obj is Run other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

@@ -28,7 +28,7 @@ namespace SpeedrunComSharp
         public ReadOnlyCollection<Variable> Variables { get { return variables.Value; } }
         public IEnumerable<Run> Runs { get; private set; }
         public Leaderboard Leaderboard { get { return leaderboard.Value; } }
-        public Record WorldRecord { get { return worldRecord.Value; }}
+        public Record WorldRecord { get { return worldRecord.Value; } }
 
         #endregion
 
@@ -37,19 +37,22 @@ namespace SpeedrunComSharp
         public static Category Parse(SpeedrunComClient client, dynamic categoryElement)
         {
             if (categoryElement is ArrayList)
+            {
                 return null;
+            }
 
-            var category = new Category();
+            var category = new Category
+            {
+                //Parse Attributes
 
-            //Parse Attributes
-
-            category.ID = categoryElement.id as string;
-            category.Name = categoryElement.name as string;
-            category.WebLink = new Uri(categoryElement.weblink as string);
-            category.Type = categoryElement.type == "per-game" ? CategoryType.PerGame : CategoryType.PerLevel;
-            category.Rules = categoryElement.rules as string;
-            category.Players = Players.Parse(client, categoryElement.players);
-            category.IsMiscellaneous = categoryElement.miscellaneous;
+                ID = categoryElement.id as string,
+                Name = categoryElement.name as string,
+                WebLink = new Uri(categoryElement.weblink as string),
+                Type = categoryElement.type == "per-game" ? CategoryType.PerGame : CategoryType.PerLevel,
+                Rules = categoryElement.rules as string,
+                Players = Players.Parse(client, categoryElement.players),
+                IsMiscellaneous = categoryElement.miscellaneous
+            };
 
             //Parse Links
 
@@ -72,8 +75,12 @@ namespace SpeedrunComSharp
 
             if (properties.ContainsKey("variables"))
             {
-                Func<dynamic, Variable> parser = x => Variable.Parse(client, x) as Variable;
-                var variables = client.ParseCollection(properties["variables"].data, parser);
+                Variable parser(dynamic x)
+                {
+                    return Variable.Parse(client, x) as Variable;
+                }
+
+                var variables = client.ParseCollection(properties["variables"].data, (Func<dynamic, Variable>)parser);
                 category.variables = new Lazy<ReadOnlyCollection<Variable>>(() => variables);
             }
             else
@@ -105,7 +112,9 @@ namespace SpeedrunComSharp
                 category.worldRecord = new Lazy<Record>(() =>
                     {
                         if (category.leaderboard.IsValueCreated)
+                        {
                             return category.Leaderboard.Records.FirstOrDefault();
+                        }
 
                         var leaderboard = client.Leaderboards
                                         .GetLeaderboardForFullGameCategory(category.GameID, category.ID, top: 1);
@@ -138,10 +147,10 @@ namespace SpeedrunComSharp
 
         public override bool Equals(object obj)
         {
-            var other = obj as Category;
-
-            if (other == null)
+            if (!(obj is Category other))
+            {
                 return false;
+            }
 
             return ID == other.ID;
         }

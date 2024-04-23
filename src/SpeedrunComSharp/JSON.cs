@@ -33,6 +33,7 @@ namespace SpeedrunComSharp
                 json = reader.ReadToEnd();
             }
             catch { }
+
             return FromString(json);
         }
 
@@ -53,7 +54,10 @@ namespace SpeedrunComSharp
             request.Timeout = (int)timeout.TotalMilliseconds;
             request.UserAgent = userAgent;
             if (!string.IsNullOrEmpty(accessToken))
+            {
                 request.Headers.Add("X-API-Key", accessToken.ToString());
+            }
+
             var response = request.GetResponse();
             return FromResponse(response);
         }
@@ -70,7 +74,10 @@ namespace SpeedrunComSharp
             request.Method = "POST";
             request.UserAgent = userAgent;
             if (!string.IsNullOrEmpty(accessToken))
+            {
                 request.Headers.Add("X-API-Key", accessToken.ToString());
+            }
+
             request.ContentType = "application/json";
 
             using (var writer = new StreamWriter(request.GetRequestStream()))
@@ -89,7 +96,9 @@ namespace SpeedrunComSharp
         public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
         {
             if (dictionary == null)
+            {
                 throw new ArgumentNullException("dictionary");
+            }
 
             return type == typeof(object) ? new DynamicJsonObject(dictionary) : null;
         }
@@ -112,13 +121,16 @@ namespace SpeedrunComSharp
         //public IDictionary<string, object> Properties { get { return _dictionary; } }
 
         public DynamicJsonObject()
-            : this(new Dictionary<string, object>()) 
+            : this(new Dictionary<string, object>())
         { }
 
         public DynamicJsonObject(IDictionary<string, object> dictionary)
         {
             if (dictionary == null)
+            {
                 throw new ArgumentNullException("dictionary");
+            }
+
             _dictionary = dictionary;
         }
 
@@ -135,7 +147,10 @@ namespace SpeedrunComSharp
             foreach (var pair in _dictionary)
             {
                 if (!firstInDictionary)
+                {
                     sb.Append(",\r\n");
+                }
+
                 sb.Append('\t', depth);
                 firstInDictionary = false;
                 var value = pair.Value;
@@ -161,47 +176,73 @@ namespace SpeedrunComSharp
                     foreach (var arrayValue in (IEnumerable<object>)value)
                     {
                         if (!firstInArray)
+                        {
                             sb.Append(",\r\n");
-                        sb.Append('\t', depth+1);
+                        }
+
+                        sb.Append('\t', depth + 1);
                         firstInArray = false;
                         if (arrayValue is IDictionary<string, object>)
+                        {
                             new DynamicJsonObject((IDictionary<string, object>)arrayValue).ToString(sb, depth + 2);
+                        }
                         else if (arrayValue is DynamicJsonObject)
                         {
                             sb.Append("{\r\n");
                             ((DynamicJsonObject)arrayValue).ToString(sb, depth + 2);
                         }
                         else if (arrayValue is string)
+                        {
                             sb.AppendFormat("\"{0}\"", HttpUtility.JavaScriptStringEncode((string)arrayValue));
+                        }
                         else if (arrayValue is bool)
+                        {
                             sb.AppendFormat("{0}", HttpUtility.JavaScriptStringEncode(((bool)arrayValue).ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
+                        }
                         else if (arrayValue is int)
+                        {
                             sb.AppendFormat("{0}", HttpUtility.JavaScriptStringEncode(((int)arrayValue).ToString(CultureInfo.InvariantCulture)));
+                        }
                         else if (arrayValue is double)
+                        {
                             sb.AppendFormat("{0}", HttpUtility.JavaScriptStringEncode(((double)arrayValue).ToString(CultureInfo.InvariantCulture)));
+                        }
                         else if (arrayValue is decimal)
+                        {
                             sb.AppendFormat("{0}", HttpUtility.JavaScriptStringEncode(((decimal)arrayValue).ToString(CultureInfo.InvariantCulture)));
+                        }
                         else
+                        {
                             sb.AppendFormat("\"{0}\"", HttpUtility.JavaScriptStringEncode((arrayValue ?? "").ToString()));
-
+                        }
                     }
+
                     sb.Append("\r\n");
                     sb.Append('\t', depth);
                     sb.Append("]");
                 }
                 else if (value is bool)
+                {
                     sb.AppendFormat("\"{0}\": {1}", HttpUtility.JavaScriptStringEncode(name), HttpUtility.JavaScriptStringEncode(((bool)value).ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
+                }
                 else if (value is int)
+                {
                     sb.AppendFormat("\"{0}\": {1}", HttpUtility.JavaScriptStringEncode(name), HttpUtility.JavaScriptStringEncode(((int)value).ToString(CultureInfo.InvariantCulture)));
+                }
                 else if (value is double)
+                {
                     sb.AppendFormat("\"{0}\": {1}", HttpUtility.JavaScriptStringEncode(name), HttpUtility.JavaScriptStringEncode(((double)value).ToString(CultureInfo.InvariantCulture)));
+                }
                 else if (value is decimal)
+                {
                     sb.AppendFormat("\"{0}\": {1}", HttpUtility.JavaScriptStringEncode(name), HttpUtility.JavaScriptStringEncode(((decimal)value).ToString(CultureInfo.InvariantCulture)));
+                }
                 else
                 {
                     sb.AppendFormat("\"{0}\": \"{1}\"", HttpUtility.JavaScriptStringEncode(name), HttpUtility.JavaScriptStringEncode((value ?? "").ToString()));
                 }
             }
+
             sb.Append("\r\n");
             sb.Append('\t', depth - 1);
             sb.Append("}");
@@ -241,7 +282,9 @@ namespace SpeedrunComSharp
             result = WrapResultObject(result);
 
             if (result is string)
+            {
                 result = JavaScriptStringDecode(result as string);
+            }
 
             return true;
         }
@@ -284,12 +327,12 @@ namespace SpeedrunComSharp
 
         private static object WrapResultObject(object result)
         {
-            var dictionary = result as IDictionary<string, object>;
-            if (dictionary != null)
+            if (result is IDictionary<string, object> dictionary)
+            {
                 return new DynamicJsonObject(dictionary);
+            }
 
-            var arrayList = result as ArrayList;
-            if (arrayList != null && arrayList.Count > 0)
+            if (result is ArrayList arrayList && arrayList.Count > 0)
             {
                 return arrayList[0] is IDictionary<string, object>
                     ? new List<object>(arrayList.Cast<IDictionary<string, object>>().Select(x => new DynamicJsonObject(x)))

@@ -12,9 +12,9 @@ namespace SpeedrunComSharp
 
     internal class CachedEnumerable<T> : IEnumerable<T>
     {
-        IEnumerable<T> baseEnumerable;
-        IEnumerator<T> baseEnumerator;
-        List<T> cachedElements;
+        private readonly IEnumerable<T> baseEnumerable;
+        private IEnumerator<T> baseEnumerator;
+        private readonly List<T> cachedElements;
 
         public CachedEnumerable(IEnumerable<T> baseEnumerable)
         {
@@ -25,10 +25,14 @@ namespace SpeedrunComSharp
         public IEnumerator<T> GetEnumerator()
         {
             foreach (var element in cachedElements)
+            {
                 yield return element;
+            }
 
             if (baseEnumerator == null)
+            {
                 baseEnumerator = baseEnumerable.GetEnumerator();
+            }
 
             while (baseEnumerator.MoveNext())
             {

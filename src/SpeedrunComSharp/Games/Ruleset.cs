@@ -26,8 +26,12 @@ namespace SpeedrunComSharp
             ruleset.RequiresVerification = properties["require-verification"];
             ruleset.RequiresVideo = properties["require-video"];
 
-            Func<dynamic, TimingMethod> timingMethodParser = x => TimingMethodHelpers.FromString(x as string);
-            ruleset.TimingMethods = client.ParseCollection(properties["run-times"], timingMethodParser);
+            TimingMethod timingMethodParser(dynamic x)
+            {
+                return TimingMethodHelpers.FromString(x as string);
+            }
+
+            ruleset.TimingMethods = client.ParseCollection(properties["run-times"], (Func<dynamic, TimingMethod>)timingMethodParser);
             ruleset.DefaultTimingMethod = TimingMethodHelpers.FromString(properties["default-time"]);
 
             ruleset.EmulatorsAllowed = properties["emulators-allowed"];
@@ -39,15 +43,29 @@ namespace SpeedrunComSharp
         {
             var list = new List<string>();
             if (ShowMilliseconds)
+            {
                 list.Add("Show Milliseconds");
+            }
+
             if (RequiresVerification)
+            {
                 list.Add("Requires Verification");
+            }
+
             if (RequiresVideo)
+            {
                 list.Add("Requires Video");
+            }
+
             if (EmulatorsAllowed)
+            {
                 list.Add("Emulators Allowed");
+            }
+
             if (!list.Any())
+            {
                 list.Add("No Rules");
+            }
 
             return list.Aggregate(", ");
         }
